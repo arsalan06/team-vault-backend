@@ -1,4 +1,4 @@
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 import { logger } from "../lib/logger.js";
 
 // Express recognizes this as an error handler because it takes 4
@@ -9,7 +9,7 @@ export function errorHandler(err, req, res, next) {
   if (err instanceof ZodError) {
     return res.status(400).json({
       error: "Validation failed",
-      details: err.flatten().fieldErrors,
+      details: z.flattenError(err).fieldErrors,
     });
   }
 

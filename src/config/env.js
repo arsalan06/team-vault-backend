@@ -25,7 +25,7 @@ const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   console.error(
     "❌ Invalid environment variables:",
-    parsed.error.flatten().fieldErrors,
+    z.flattenError(parsed.error).fieldErrors,
   );
   process.exit(1);
 }
