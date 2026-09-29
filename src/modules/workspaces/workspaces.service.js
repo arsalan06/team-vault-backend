@@ -52,3 +52,14 @@ export async function listUserWorkspaces(userId, { limit, cursor }) {
     id: row.membershipId,
   }));
 }
+
+export async function getWorkspace(id) {
+  const workspace = await repo.findWorkspaceById(id);
+  if (!workspace) throw notFound("Workspace not found");
+  return workspace;
+}
+
+export async function updateWorkspace(id, { name }) {
+  await repo.updateWorkspaceName(id, name);
+  return getWorkspace(id);
+}
