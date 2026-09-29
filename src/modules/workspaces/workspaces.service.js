@@ -40,3 +40,15 @@ export async function createWorkspace(userId, name) {
     return { id, name, role: "OWNER" };
   });
 }
+
+export async function listUserWorkspaces(userId, { limit, cursor }) {
+  const safeLimit = clampLimit(limit);
+  const rows = await repo.listWorkspacesForUser(userId, {
+    limit: safeLimit,
+    cursor: decodeCursor(cursor),
+  });
+  return buildPage(rows, safeLimit, (row) => ({
+    createdAt: row.joinedAt,
+    id: row.membershipId,
+  }));
+}
