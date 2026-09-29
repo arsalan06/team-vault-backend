@@ -11,7 +11,16 @@ export function validate(schema) {
     });
     req.body = result.body ?? req.body;
     req.params = result.params ?? req.params;
-    req.query = result.query ?? req.query;
+    // Express 5 makes req.query a getter-only property, so plain assignment
+    // throws. Redefine it on the instance instead.
+    if (result.query) {
+      Object.defineProperty(req, "query", {
+        value: result.query,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
+    }
     next();
   };
 }

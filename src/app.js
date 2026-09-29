@@ -7,6 +7,7 @@ import { logger } from "./lib/logger.js";
 import { requestId } from "./middleware/requestId.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
+import { workspaceRouter } from "./modules/workspaces/workspace.routes.js";
 
 // This file ONLY builds and configures the app — it never calls
 // app.listen(). That separation lets tests (Supertest) import this app
@@ -23,6 +24,7 @@ app.use(pinoHttp({ logger })); // logs every request/response automatically
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 app.use("/auth", authRouter);
+app.use("/workspace", workspaceRouter);
 
 // Catch-all for unmatched routes — must come after all real routes.
 app.use((req, res) => {
