@@ -160,6 +160,19 @@ export async function deleteExpiredInvites(workspaceId, email, db = pool) {
   );
 }
 
+// An invite that is still redeemable. The service calls this after
+// deleteExpiredInvites, so a second invite to the same address is only
+// refused while the first one is actually live.
+export async function findPendingInvite(workspaceId, email, db = pool) {
+  const [rows] = await db.execute(
+    `SELECT id, role, expires_at AS expiresAt
+     FROM invites
+     WHERE workspace_id = :workspaceId AND email = :email AND expires_at >= :now`,
+    { workspaceId, email, now: new Date() },
+  );
+  return rows[0] ?? null;
+}
+
 export async function insertInvite(
   { id, email, workspaceId, role, tokenHash, expiresAt },
   db = pool,
