@@ -19,8 +19,13 @@ const schema = z.object({
   // cookies, e.g. "http://localhost:4200,https://app.example.com".
   CORS_ORIGINS: z
     .string()
-    .default("http://localhost:4200")
-    .transform((v) => v.split(",").map((o) => o.trim()).filter(Boolean)),
+    .default("http://localhost:55877")
+    .transform((v) =>
+      v
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean),
+    ),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
