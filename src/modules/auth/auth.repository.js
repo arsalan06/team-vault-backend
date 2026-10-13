@@ -46,16 +46,22 @@ export async function findValidRefreshToken(tokenHash) {
   return rows[0] ?? null;
 }
 
+// Returns true only if THIS call flipped the token from active to revoked.
+// The `revoked = FALSE` condition makes it atomic: if two requests race
+// with the same refresh token, exactly one wins and the other sees false.
 export async function revokeRefreshToken(id) {
-  await pool.execute(
-    `UPDATE refresh_tokens SET revoked = TRUE WHERE id = :id`,
+  const [result] = await pool.execute(
+    `UPDATE refresh_tokens SET revoked = TRUE
+     WHERE id = :id AND revoked = FALSE`,
     { id },
   );
+  return result.affectedRows === 1;
 }
 
 export async function revokeAllUserTokens(userId) {
   await pool.execute(
-    `UPDATE refresh_tokens SET revoked = TRUE WHERE user_id = :userId`,
+    `UPDATE refresh_tokens SET revoked = TRUE
+     WHERE user_id = :userId AND revoked = FALSE`,
     { userId },
   );
 }

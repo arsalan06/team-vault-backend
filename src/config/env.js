@@ -15,6 +15,12 @@ const schema = z.object({
   ACCESS_TOKEN_TTL: z.string().default("15m"),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().default(7),
   PORT: z.coerce.number().default(3000),
+  // Comma-separated list of browser origins allowed to call the API with
+  // cookies, e.g. "http://localhost:4200,https://app.example.com".
+  CORS_ORIGINS: z
+    .string()
+    .default("http://localhost:4200")
+    .transform((v) => v.split(",").map((o) => o.trim()).filter(Boolean)),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),

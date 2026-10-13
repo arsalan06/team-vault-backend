@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
+import { env } from "./config/env.js";
 import { logger } from "./lib/logger.js";
 import { requestId } from "./middleware/requestId.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -19,7 +20,9 @@ export const app = express();
 
 app.use(requestId);
 app.use(helmet()); // sets security-related HTTP headers
-app.use(cors({ origin: "http://localhost:5173", credentials: true })); // allow the React dev server, with cookies
+// Only the configured frontend origins may call the API with cookies.
+// credentials: true is required so the browser sends the refresh cookie.
+app.use(cors({ origin: env.CORS_ORIGINS, credentials: true }));
 app.use(express.json({ limit: "1mb" })); // parses JSON bodies into req.body
 app.use(cookieParser()); // parses cookies into req.cookies
 app.use(pinoHttp({ logger })); // logs every request/response automatically
