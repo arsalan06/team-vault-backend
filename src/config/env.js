@@ -19,11 +19,13 @@ const schema = z.object({
   // cookies, e.g. "http://localhost:4200,https://app.example.com".
   CORS_ORIGINS: z
     .string()
-    .default("http://localhost:55877")
+    .default("http://localhost:4200")
     .transform((v) =>
       v
         .split(",")
-        .map((o) => o.trim())
+        // Browsers send Origin without a trailing slash, so "http://x/"
+        // would never match; strip it rather than fail silently.
+        .map((o) => o.trim().replace(/\/+$/, ""))
         .filter(Boolean),
     ),
   NODE_ENV: z
