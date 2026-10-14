@@ -15,6 +15,19 @@ const schema = z.object({
   ACCESS_TOKEN_TTL: z.string().default("15m"),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().default(7),
   PORT: z.coerce.number().default(3000),
+  // Comma-separated list of browser origins allowed to call the API with
+  // cookies, e.g. "http://localhost:4200,https://app.example.com".
+  CORS_ORIGINS: z
+    .string()
+    .default("http://localhost:4200")
+    .transform((v) =>
+      v
+        .split(",")
+        // Browsers send Origin without a trailing slash, so "http://x/"
+        // would never match; strip it rather than fail silently.
+        .map((o) => o.trim().replace(/\/+$/, ""))
+        .filter(Boolean),
+    ),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),

@@ -186,7 +186,8 @@ export async function createInvite({ workspaceId, email, role, inviter }) {
   // The raw token must never be returned in the HTTP response, or anyone
   // allowed to invite could redeem it as the invited person.
   if (env.NODE_ENV !== "production") {
-    logger.debug({ email, workspaceId, rawToken }, "invite token (dev only)");
+    const acceptUrl = `${env.CORS_ORIGINS[0]}/invites/accept?token=${rawToken}`;
+    logger.debug({ email, workspaceId, acceptUrl }, "invite link (dev only)");
   }
 
   return invite;
@@ -217,15 +218,23 @@ export async function acceptInvite(user, token) {
 
   // Join and consume in one transaction: a membership created while the
   // invite is still live would let the same link be redeemed twice.
-  return withTransaction(async (conn) => {
-    const membership = {
-      id: crypto.randomUUID(),
-      userId: user.id,
-      workspaceId: invite.workspaceId,
-      role: invite.role,
-    };
-    await repo.insertMembership(membership, conn);
-    await repo.deleteInvite(invite.id, conn);
-    return membership;
-  });
+  try {
+    return await withTransaction(async (conn) => {
+      const membership = {
+        id: crypto.randomUUID(),
+        userId: user.id,
+        workspaceId: invite.workspaceId,
+        role: invite.role,
+      };
+      await repo.insertMembership(membership, conn);
+      await repo.deleteInvite(invite.id, conn);
+      return membership;
+    });
+  } catch (err) {
+    // Two accepts racing (e.g. a double click) both pass the membership
+    // check above; the UNIQUE (user_id, workspace_id) index stops the second.
+    if (err.code === "ER_DUP_ENTRY")
+      throw conflict("You are already a member of this workspace");
+    throw err;
+  }
 }
