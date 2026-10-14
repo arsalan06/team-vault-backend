@@ -30,9 +30,9 @@ app.use(pinoHttp({ logger })); // logs every request/response automatically
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 app.use("/auth", authRouter);
-app.use("/workspace", workspaceRouter);
+app.use("/workspaces", workspaceRouter);
 // Invite acceptance lives on its own path: the token identifies the
-// workspace, so there is no :id to hang it under /workspace.
+// workspace, so there is no :id to hang it under /workspaces.
 app.use("/invites", inviteRouter);
 
 // Catch-all for unmatched routes — must come after all real routes.
